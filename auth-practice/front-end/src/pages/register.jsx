@@ -14,15 +14,17 @@ import {
   useColorModeValue,
   Link,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
 import { useNavigate } from "react-router-dom";
+import Swal from 'sweetalert2'
+import axios from "axios"
 
 export const RegistrationForm = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
 
-  const onRegister = () => {
+  const onRegister = async () => {
     try {
         const data = {
             firstName: document.getElementById("firstName").value,
@@ -31,13 +33,37 @@ export const RegistrationForm = () => {
             password: document.getElementById("password").value
         }
 
-        console.log(data);
+        const result = await axios.post("http://localhost:2000/auth/register", data)
+
         document.getElementById("firstName").value = ""
         document.getElementById("lastName").value = ""
         document.getElementById("email").value = ""
         document.getElementById("password").value = ""
+
+        Swal.fire({
+          icon: 'success',
+          title: result.data.message,
+          showConfirmButton: false,
+          timer: 1500
+        })
+        
     } catch (err) {
         console.log(err);
+        if (err.response.data) {
+          Swal.fire({
+            icon: 'error',
+            title: err.response.data,
+            showConfirmButton: false,
+            timer: 1500
+          })
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: err.response.data.errors[0].message,
+            showConfirmButton: false,
+            timer: 1500
+          })
+        }
     }
   }
 
